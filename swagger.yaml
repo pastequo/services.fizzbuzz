@@ -1,0 +1,122 @@
+swagger: "2.0"
+
+info:
+  title: fizzbuzz
+  description: the service can apply fizzbuzz algorithm and statistics about the  calls.
+  version: "#VERSION"
+  contact:
+    name: pastequo@github
+
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /algo/fizzbuzz:
+    post:
+      summary: Creates a string according to the fizzbuzz algo.
+      operationId: fizzbuzz
+      parameters:
+        - in: body
+          name: fizzbuzzParams
+          required: true
+          x-nullable: false
+          description: fizzbuzz algo parameter to use.
+          schema:
+            $ref: "#/definitions/fizzbuzzParams"
+      responses:
+        200:
+          description: Successfully applied.
+          schema:
+            type: string
+            x-isnullable: true
+        204:
+          description: Successfull but empty.
+        400:
+          $ref: "#/responses/badRequest"
+        500:
+          description: Internal error.
+        503:
+          # if the stats should be persisted somewhere.
+          description: Not available.
+  /algo/fizzbuzz/stats:
+    get:
+      summary: get stats about the most used parameters
+      operationId: stats
+      responses:
+        200:
+          description: Ok.
+          schema:
+            type: object
+            required:
+              - count
+            properties:
+              count:
+                type: integer
+                format: int32
+                minimum: 0
+              parameter:
+                $ref: "#/definitions/fizzbuzzParams"
+        500:
+          description: Internal error.
+        503:
+          # if the stats are be persisted somewhere.
+          description: Not available.
+  /healthcheck:
+    get:
+      summary: Healthcheck route.
+      operationId: healthcheck
+      responses:
+        200:
+          description: Ok.
+
+responses:
+  # Errors
+  badRequest:
+    description: "Bad request."
+    schema:
+      $ref: "#/definitions/errorMsg"
+
+definitions:
+  # Errors
+  errorMsg:
+    type: object
+    required:
+    - type
+    properties:
+      type:
+        type: string
+        enum:
+        - ErrInvalidParams
+        - ErrInvalidObject
+      message:
+        type: string
+
+  fizzbuzzWord:
+    type: object
+    properties:
+      word: 
+        type: string
+        x-isnullable: false
+      multiple:
+        type: integer
+        format: int32
+        minimum: 1
+  fizzbuzzParams:
+    type: object
+    required:
+      - limit
+      - word1
+      - word2
+    properties:
+      limit:
+        type: integer
+        format: int32
+        minimum: 1
+      word1:
+        $ref: "#/definitions/fizzbuzzWord"
+      word2:
+        $ref: "#/definitions/fizzbuzzWord"

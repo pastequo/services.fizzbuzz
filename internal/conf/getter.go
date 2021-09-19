@@ -1,0 +1,79 @@
+package conf
+
+import (
+	"time"
+
+	"github.com/pastequo/libs.golang.utils/logutil"
+	"github.com/spf13/viper"
+)
+
+const prefix = "FIZZBUZZ"
+
+// Below all the different keys used to configure this service.
+const (
+	logsLevel = "LOGS_LEVEL"
+
+	globalTimeout    = "GLOBAL_TIMEOUT"
+	gracefulShutdown = "GRACEFUL_SHUTDOWN"
+)
+
+// ParseConfiguration reads the configuration file given as parameter.
+func ParseConfiguration(confFile string) {
+	logger := logutil.GetDefaultLogger()
+
+	setDefault()
+
+	viper.SetEnvPrefix(prefix)
+	viper.AutomaticEnv() // read in environment variables that match
+
+	if len(confFile) > 0 {
+		viper.SetConfigFile(confFile)
+
+		err := viper.ReadInConfig()
+		if err != nil {
+			logger.WithError(err).Errorf("failed to read config file %v", confFile)
+		} else {
+			logger.Infof("using config file: %v", viper.ConfigFileUsed())
+		}
+	}
+}
+
+//nolint: gomnd
+func setDefault() {
+	viper.SetDefault(logsLevel, "WARN")
+	viper.SetDefault(globalTimeout, 10*time.Second)
+	viper.SetDefault(gracefulShutdown, 10*time.Second)
+}
+
+// GetLogsLevel returns the log-level to set to the logger.
+func GetLogsLevel() logutil.Level {
+	logger := logutil.GetDefaultLogger()
+
+	level := viper.GetString(logsLevel)
+	switch level {
+	case "TRACE":
+		return logutil.TraceLevel
+	case "DEBUG":
+		return logutil.DebugLevel
+	case "INFO":
+		return logutil.InfoLevel
+	case "WARN":
+		return logutil.WarnLevel
+	case "ERROR":
+		return logutil.ErrorLevel
+	}
+
+	logger.Infof("unknown value '%v', will use WARN value", level)
+
+	return logutil.WarnLevel
+}
+
+// GetGlobalTimeout returns the global timeout to use on all routes.
+func GetGlobalTimeout() time.Duration {
+	return viper.GetDuration(globalTimeout)
+}
+
+// GetGracefulShutdown returns the duration for graceful shutdown.
+func GetGracefulShutdown() time.Duration {
+	return viper.GetDuration(gracefulShutdown)
+}

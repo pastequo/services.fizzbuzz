@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fizzbuzz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fizzbuzz
+  template:
+    metadata:
+      labels:
+        app: fizzbuzz
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: fizzbuzz-config
+      containers:
+      - name: app
+        image: app-image:latest
+        args:
+        - -c
+        - /etc/fizzbuzz/.fizzbuzz.yaml
+        ports:
+        - name: api
+          containerPort: 8080
+        - name: metrics
+          containerPort: 7777
+        volumeMounts:
+        - name: config
+          mountPath: /etc/fizzbuzz/
+        resources:
+          requests:
+            cpu: 200m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8080
+          initialDelaySeconds: 40
+          periodSeconds: 30
+

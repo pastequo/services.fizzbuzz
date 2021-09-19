@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+commonLabels:
+  app: fizzbuzz
+resources:
+- deployment.yaml
+- service.yaml
+configMapGenerator:
+- name: fizzbuzz-config
+  files:
+  - resources/.fizzbuzz.yaml
+generatorOptions:
+  disableNameSuffixHash: true
